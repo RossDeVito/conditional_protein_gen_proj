@@ -1,6 +1,12 @@
 # Project Specific
 data/*.fasta
 data/*.gz
+data/*.xml
+data/*.xsd
+data/uniref50_csvs/*.csv
+data/uniref50_small/train_data.csv
+data/uniref50_small/val_data.csv
+data/uniref50_small/test_data.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
