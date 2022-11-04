@@ -1,0 +1,47 @@
+{
+	"training_output_dir": "training_output",
+	"model_version": "v0",
+	"data_mod_kwargs": {
+		"data_dir": "../../data/uniref50_small",
+		"train_data_fname": "subset_train_data.csv",
+		"test_data_fname": "subset_test_data.csv",
+		"val_data_fname": "subset_val_data.csv",
+		"batch_size": 256,
+		"num_workers": 8,
+		"taxon_dropout_rate": 0.1,
+		"attribute_dropout_rate": 0.1
+	},
+	"model_config_kwargs": {
+		"d_model": 64,
+		"transformer_kwargs": {
+			"nhead": 8,
+			"num_encoder_layers": 1,
+			"num_decoder_layers": 3,
+			"dim_feedforward": 128,
+			"dropout": 0.1,
+			"activation": "gelu",
+			"norm_first": true
+		},
+		"optimizer_kwargs": {
+			"betas": [0.9, 0.95],
+			"lr": 1e-4,
+			"weight_decay": 1e-2
+		},
+		"reduce_lr_on_plateau_kwargs": {
+			"patience": 7,
+			"factor": 0.5,
+			"cooldown": 5,
+			"verbose": true
+		}
+	},
+	"callbacks": {
+		"LearningRateMonitor": {},
+		"EarlyStopping": {
+			"monitor": "val_loss",
+			"patience": 10
+		}
+	},
+	"trainer_kwargs": {
+		"max_epochs": 10
+	}
+}
