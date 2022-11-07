@@ -91,7 +91,6 @@ if __name__ == '__main__':
 		trainer_args['accelerator'] = 'gpu'
 		trainer_args['devices'] = 1
 
-
 	trainer = pl.Trainer(**trainer_args)
 
 	# Train model

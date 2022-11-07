@@ -86,6 +86,8 @@ class ProteinDataset(Dataset):
 			being excluded as a conditioning tag.
 		attribute_dropout_rate (default 0.0): Probability of each attribute
 			tag being excluded from conditioning set.
+		reverse_prot_seq (default False): Whether to reverse protein sequence
+			order randomly half of the time.
 	"""
 
 	def __init__(
@@ -94,10 +96,12 @@ class ProteinDataset(Dataset):
 		data_fname,
 		taxon_dropout_rate=0.0,
 		attribute_dropout_rate=0.0,
+		reverse_prot_seq=False,
 	):
 		self.data_file = os.path.join(data_dir, data_fname)
 		self.taxon_dropout_rate = taxon_dropout_rate
 		self.attribute_dropout_rate = attribute_dropout_rate
+		self.reverse_prot_seq = reverse_prot_seq
 		
 		# Load data
 		self.data = pd.read_csv(self.data_file, index_col=0)
@@ -144,6 +148,8 @@ class ProteinDataset(Dataset):
 		sequence = torch.tensor(
 			[AMINO_ACID_SYM_TO_IDX[sym] for sym in sample["sequence"]]
 		)
+		if self.reverse_prot_seq and torch.rand(1) > 0.5:
+			sequence = sequence.flip(0)
 
 		# Get conditioning tags
 		conditioning_tags = []
@@ -274,6 +280,8 @@ class ProteinDataModule(pl.LightningDataModule):
 			data_dir.
 		batch_size (default 64): Batch size to use.
 		num_workers (default 4): Number of workers to use for data loading.
+		reverse_train_seq (default True): Whether to reverse protein sequences
+			randomly during training.
 		**kwargs: Additional keyword arguments passed to ProteinDataset.
 	"""
 
@@ -286,6 +294,7 @@ class ProteinDataModule(pl.LightningDataModule):
 		test_data_fname="test_data.csv",
 		batch_size=64,
 		num_workers=4,
+		reverse_train_seq=True,
 		**kwargs
 	):
 		super().__init__()
@@ -296,6 +305,7 @@ class ProteinDataModule(pl.LightningDataModule):
 		self.test_data_fname = test_data_fname
 		self.batch_size = batch_size
 		self.num_workers = num_workers
+		self.reverse_train_seq = reverse_train_seq
 		self.kwargs = kwargs
 
 	def setup(self, stage=None):
@@ -304,6 +314,7 @@ class ProteinDataModule(pl.LightningDataModule):
 			self.train_dataset = ProteinDataset(
 				self.data_dir,
 				self.train_data_fname,
+				reverse_prot_seq=self.reverse_train_seq,
 				**self.kwargs
 			)
 			self.val_dataset = ProteinDataset(
@@ -368,3 +379,20 @@ if __name__ == '__main__':
 	collated_batch_sep = SeperateInputColationFn(batch)
 
 	collated_batch = AutoRegressiveLMCollationFn(batch)
+
+	# Test data mod
+	data_module = ProteinDataModule(
+		data_path,
+		AutoRegressiveLMCollationFn,
+		train_data_fname='subset_train_data.csv',
+		val_data_fname='subset_val_data.csv',
+		test_data_fname='subset_test_data.csv',
+		batch_size=4,
+		num_workers=0,
+	)
+	data_module.setup()
+
+	tds = data_module.train_dataset
+	
+
+	
