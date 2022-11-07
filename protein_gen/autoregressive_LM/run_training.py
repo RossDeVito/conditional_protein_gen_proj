@@ -63,6 +63,12 @@ if __name__ == '__main__':
 				**training_args['callbacks']['EarlyStopping']
 			)
 		)
+	if "StochasticWeightAveraging" in training_args['callbacks']:
+		callbacks.append(
+			pl.callbacks.StochasticWeightAveraging(
+				**training_args['callbacks']['StochasticWeightAveraging']
+			)
+		)
 
 	# Create trainer
 	trainer_args = {
@@ -80,8 +86,10 @@ if __name__ == '__main__':
 	if 'mac' in platform_info.lower() and 'arm' in platform_info.lower():
 		print("Avoiding MPS")
 		trainer_args['accelerator'] = 'cpu'
-	else:
-		trainer_args['accelerator'] = 'auto'
+	elif torch.cuda.device_count() > 0:
+		print("Using GPU")
+		trainer_args['accelerator'] = 'gpu'
+		trainer_args['devices'] = 1
 
 
 	trainer = pl.Trainer(**trainer_args)
@@ -90,6 +98,7 @@ if __name__ == '__main__':
 	trainer.fit(model, data_module)
 
 	# Get performance on test set
+	data_module.setup(stage='test')
 	test_results = trainer.test(ckpt_path='best',
 		dataloaders=data_module.test_dataloader()
 	)[0]

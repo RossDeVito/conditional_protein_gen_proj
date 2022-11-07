@@ -49,6 +49,7 @@ class ARLMConfig:
 		self.max_sequence_length = max_sequence_length
 		self.d_model = d_model
 		self.emb_p_drop = emb_p_drop
+		self.training_config = training_config
 
 		self.transformer_kwargs = transformer_kwargs
 		if self.transformer_kwargs is None:
@@ -142,7 +143,7 @@ class ARLM(pl.LightningModule):
 			memory_key_padding_mask=~x["tag_mask"],
 			tgt_mask=~torch.tril(
 				torch.ones(x["x_seq"].shape[1], x["x_seq"].shape[1])
-			).bool()
+			).bool().type_as(x["tag_mask"])
 		)
 
 		# Decoder head
