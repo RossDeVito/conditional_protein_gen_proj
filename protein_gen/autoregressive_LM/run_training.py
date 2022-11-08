@@ -92,6 +92,12 @@ if __name__ == '__main__':
 		trainer_args['devices'] = 1
 
 	trainer = pl.Trainer(**trainer_args)
+	
+	# Save training arguments
+	if not os.path.exists(trainer.logger.log_dir):
+		os.makedirs(trainer.logger.log_dir)
+	with open(os.path.join(trainer.logger.log_dir, 'training_args.json'), 'w') as f:
+		json.dump(training_args, f)
 
 	# Train model
 	trainer.fit(model, data_module)
@@ -106,7 +112,3 @@ if __name__ == '__main__':
 	# Save test results
 	with open(os.path.join(trainer.logger.log_dir, 'test_res.json'), 'w') as f:
 		json.dump(test_results, f)
-
-	# Save training arguments
-	with open(os.path.join(trainer.logger.log_dir, 'training_args.json'), 'w') as f:
-		json.dump(training_args, f)

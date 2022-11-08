@@ -12,12 +12,12 @@
 		"attribute_dropout_rate": 0.2
 	},
 	"model_config_kwargs": {
-		"d_model": 256,
+		"d_model": 128,
 		"transformer_kwargs": {
 			"nhead": 8,
 			"num_encoder_layers": 1,
-			"num_decoder_layers": 8,
-			"dim_feedforward": 384,
+			"num_decoder_layers": 5,
+			"dim_feedforward": 192,
 			"dropout": 0.1,
 			"activation": "gelu",
 			"norm_first": true
@@ -30,7 +30,7 @@
 		"reduce_lr_on_plateau_kwargs": {
 			"patience": 5,
 			"factor": 0.5,
-			"cooldown": 5,
+			"cooldown": 1,
 			"verbose": true
 		}
 	},
