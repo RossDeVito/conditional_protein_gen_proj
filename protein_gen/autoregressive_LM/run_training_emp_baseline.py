@@ -11,7 +11,7 @@ import pytorch_lightning as pl
 from protein_gen.data_modules import (
 	ProteinDataModule, AutoRegressiveLMCollationFn
 )
-from protein_gen.autoregressive_LM import ARLMConfig, ARLM
+from protein_gen.autoregressive_LM import ARLMConfig, EmpiricalBaselineARLM
 
 
 def get_n_trainable_params(model):
@@ -43,9 +43,7 @@ if __name__ == '__main__':
 		**training_args['model_config_kwargs']
 	)
 
-	model = ARLM(model_config.as_dict())
-	n_trainable_params = get_n_trainable_params(model)
-	print(f'Number of trainable parameters: {n_trainable_params}')
+	model = EmpiricalBaselineARLM(model_config.as_dict())
 
 	# Create training callbacks
 	callbacks = [
@@ -86,15 +84,8 @@ if __name__ == '__main__':
 		default_hp_metric=False
 	)
 
-	platform_info = platform.platform()
-	if 'mac' in platform_info.lower() and 'arm' in platform_info.lower():
-		# print("Avoiding MPS")
-		trainer_args['accelerator'] = 'auto'
-	elif torch.cuda.device_count() > 0:
-		print("Using GPU")
-		trainer_args['accelerator'] = 'gpu'
-		trainer_args['devices'] = 1
-
+	trainer_args['accelerator'] = 'cpu'
+	
 	trainer = pl.Trainer(**trainer_args)
 	
 	# Save training arguments
@@ -111,7 +102,6 @@ if __name__ == '__main__':
 	test_results = trainer.test(ckpt_path='best',
 		dataloaders=data_module.test_dataloader()
 	)[0]
-	test_results['n_trainable_params'] = n_trainable_params
 
 	# Save test results
 	with open(os.path.join(trainer.logger.log_dir, 'test_res.json'), 'w') as f:

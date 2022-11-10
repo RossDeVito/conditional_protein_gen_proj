@@ -75,7 +75,7 @@ class ARLM(pl.LightningModule):
 	Some stuff from https://github.com/williamFalcon/minGPT
 	
 	Args:
-		config: ARLMConfig instance.
+		config (dict): ARLMConfig as dict.
 	"""
 
 	def __init__(self, config):
@@ -224,6 +224,148 @@ class ARLM(pl.LightningModule):
 		else:
 			return optimizer
 
+
+class UniformBaselineARLM(pl.LightningModule):
+	""" Baseline ARLM that returns uniform probability of each output.
+
+	Args:
+		config (dict): ARLMConfig as dict.
+	"""
+
+	def __init__(self, config):
+		super().__init__()
+		self.config = config
+		self.save_hyperparameters()
+
+		# Create output with uniform probability except for padding at index 0
+		aa_vocab_size = self.config["aa_vocab_size"]
+		self.register_buffer(
+			"output",
+			torch.ones(aa_vocab_size) / (aa_vocab_size - 1)
+		)
+		self.output[0] = 0
+
+	def forward(self, x):
+		""" Forward pass of the model.
+
+		Args:
+			x (dict): Input dictionary with the following keys:
+				"x_seq": Input sequence of shape (batch_size, seq_len).
+
+		Returns:
+			output (torch.Tensor): Output of shape (batch_size, seq_len, vocab_size).
+		"""
+		output = self.output.expand(x["x_seq"].shape[0], x["x_seq"].shape[1], -1)
+		return output
+
+	def shared_step(self, batch):
+		""" Shared step for training and validation. """
+		output = self(batch)
+
+		# Calculate loss
+		loss = F.cross_entropy(
+			output.view(-1, output.shape[-1]),
+			batch["y_seq"].view(-1),
+			ignore_index=0
+		)
+
+		return output, loss
+
+	def test_step(self, batch, batch_idx):
+		output, loss = self.shared_step(batch)
+		self.log("test_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
+		ppl = torch.exp(loss)
+		self.log(
+			"test_perplexity", ppl, on_step=False, on_epoch=True, prog_bar=True
+		)
+		return {"test_loss": loss, "test_perplexity": ppl}
+
+
+class EmpiricalBaselineARLM(pl.LightningModule):
+	""" Baseline LM that returns empirical probability of each output token. 
+
+	Token probabilities are learned during training.
+	
+	Args:
+		config (dict): ARLMConfig as dict.
+	"""
+
+	def __init__(self, config):
+		super().__init__()
+		self.config = config
+		self.save_hyperparameters()
+		self.padding_idx = 0 # Will ignore padding in computing token probabilities
+
+		# Create output with uniform probability except for padding at index 0
+		aa_vocab_size = self.config["aa_vocab_size"]
+		self.register_buffer(
+			"output",
+			torch.ones(aa_vocab_size) / (aa_vocab_size - 1)
+		)
+		self.output[0] = 0
+
+		# Create token counts
+		self.token_counts = torch.zeros(aa_vocab_size)
+
+	def forward(self, x):
+		""" Forward pass of the model.
+
+		Args:
+			x (dict): Input dictionary with the following keys:
+				"x_seq": Input sequence of shape (batch_size, seq_len).
+
+		Returns:
+			output (torch.Tensor): Output of shape (batch_size, seq_len, vocab_size).
+		"""
+		output = self.output.expand(x["x_seq"].shape[0], x["x_seq"].shape[1], -1)
+		return output
+
+	def training_step(self, batch, batch_idx):
+		self.token_counts += torch.bincount(
+			batch["y_seq"].view(-1), minlength=self.token_counts.shape[0]
+		)
+
+	def training_epoch_end(self, outputs):
+		# zero out padding
+		self.token_counts[self.padding_idx] = 0
+
+		# compute token probabilities
+		token_probs = self.token_counts / self.token_counts.sum()
+		self.output = token_probs
+
+	def shared_step(self, batch):
+		""" Shared step for training and validation. """
+		output = self(batch)
+
+		# Calculate loss
+		loss = F.cross_entropy(
+			output.view(-1, output.shape[-1]),
+			batch["y_seq"].view(-1),
+			ignore_index=0
+		)
+
+		return output, loss
+
+	def validation_step(self, batch, batch_idx):
+		output, loss = self.shared_step(batch)
+		self.log("val_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
+		ppl = torch.exp(loss)
+		self.log(
+			"val_perplexity", ppl, on_step=False, on_epoch=True, prog_bar=True
+		)
+		return {"val_loss": loss, "val_perplexity": ppl}
+
+	def test_step(self, batch, batch_idx):
+		output, loss = self.shared_step(batch)
+		self.log("test_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
+		ppl = torch.exp(loss)
+		self.log(
+			"test_perplexity", ppl, on_step=False, on_epoch=True, prog_bar=True
+		)
+		return {"test_loss": loss, "test_perplexity": ppl}
+
+	def configure_optimizers(self):
+		return None
 
 
 if __name__ == "__main__":
