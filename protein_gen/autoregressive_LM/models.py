@@ -81,30 +81,30 @@ class ARLM(pl.LightningModule):
 	def __init__(self, config):
 		super().__init__()
 		self.config = config
-		self.max_sequence_length = config.max_sequence_length
-		self.save_hyperparameters(self.config.as_dict())
+		self.max_sequence_length = config['max_sequence_length']
+		self.save_hyperparameters()
 		
 		# Create model
 		# Embedding layers
 		self.conditioning_tags_embedding = nn.Embedding(
-			self.config.conditioning_tags_vocab_size,
-			self.config.d_model,
+			self.config['conditioning_tags_vocab_size'],
+			self.config['d_model'],
 			padding_idx=0
 		)
 		self.aa_embedding = nn.Embedding(
-			self.config.aa_vocab_size,
-			self.config.d_model,
+			self.config['aa_vocab_size'],
+			self.config['d_model'],
 			padding_idx=0
 		)
 		self.positional_embedding = nn.Parameter(
-			torch.zeros(1, self.max_sequence_length, self.config.d_model)
+			torch.zeros(1, self.max_sequence_length, self.config['d_model'])
 		)
-		self.emb_dropout = nn.Dropout(self.config.emb_p_drop)
+		self.emb_dropout = nn.Dropout(self.config['emb_p_drop'])
 		# Transformer
-		self.transformer = nn.Transformer(**self.config.transformer_kwargs)
+		self.transformer = nn.Transformer(**self.config['transformer_kwargs'])
 		# Decoder head
-		self.output_layer_norm = nn.LayerNorm(self.config.d_model)
-		self.linear = nn.Linear(self.config.d_model, self.config.aa_vocab_size)
+		self.output_layer_norm = nn.LayerNorm(self.config['d_model'])
+		self.linear = nn.Linear(self.config['d_model'], self.config['aa_vocab_size'])
 
 	def forward(self, x):
 		""" Forward pass of model.
@@ -201,18 +201,18 @@ class ARLM(pl.LightningModule):
 		optim_groups = [
 			{
 				"params": params_decay, 
-				"weight_decay": self.config.optimizer_kwargs.pop('weight_decay')
+				"weight_decay": self.config['optimizer_kwargs']['weight_decay']
 			},
 			{"params": params_nodecay, "weight_decay": 0.0},
 		]
 		optimizer = torch.optim.AdamW(
 			optim_groups, 
-			**self.config.optimizer_kwargs
+			**{k:v for k,v in self.config['optimizer_kwargs'].items() if k is not 'weight_decay'}
 		)
 
-		if self.config.reduce_lr_on_plateau_kwargs is not None:
+		if self.config['reduce_lr_on_plateau_kwargs'] is not None:
 			scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-				optimizer, **self.config.reduce_lr_on_plateau_kwargs
+				optimizer, **self.config['reduce_lr_on_plateau_kwargs']
 			)
 			return {
 				'optimizer': optimizer,

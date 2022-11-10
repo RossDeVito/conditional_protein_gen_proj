@@ -43,7 +43,7 @@ if __name__ == '__main__':
 		**training_args['model_config_kwargs']
 	)
 
-	model = ARLM(model_config)
+	model = ARLM(model_config.as_dict())
 	n_trainable_params = get_n_trainable_params(model)
 	print(f'Number of trainable parameters: {n_trainable_params}')
 
@@ -52,6 +52,10 @@ if __name__ == '__main__':
 		pl.callbacks.ModelCheckpoint(
 			monitor="val_loss",
 			filename='{epoch}-best_val_loss'
+		),
+		pl.callbacks.ModelCheckpoint(
+			save_last=True,
+			filename='{epoch}-last'
 		)
 	]
 

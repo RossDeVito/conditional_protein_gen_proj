@@ -33,12 +33,12 @@ if __name__ == '__main__':
 	n_trainable_params = get_n_trainable_params(model)
 	print(f'Number of trainable parameters: {n_trainable_params}')
 
-	training_args = model.config.training_config
+	training_args = model.config['training_config']
 
 	# Create data module
 	data_module = ProteinDataModule(
 		collate_fn=AutoRegressiveLMCollationFn,
-		**training_args['model_config_kwargs']
+		**training_args['data_mod_kwargs']
 	)
 
 	# Create training callbacks
@@ -46,6 +46,10 @@ if __name__ == '__main__':
 		pl.callbacks.ModelCheckpoint(
 			monitor="val_loss",
 			filename='{epoch}-best_val_loss'
+		),
+		pl.callbacks.ModelCheckpoint(
+			save_last=True,
+			filename='{epoch}-last'
 		)
 	]
 
