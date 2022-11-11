@@ -9,6 +9,8 @@ data/uniref50_small/val_data.csv
 data/uniref50_small/test_data.csv
 
 protein_gen/autoregressive_LM/training_output/*
+!protein_gen/autoregressive_LM/training_output/uniform_baseline/
+!protein_gen/autoregressive_LM/training_output/empirical_baseline/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

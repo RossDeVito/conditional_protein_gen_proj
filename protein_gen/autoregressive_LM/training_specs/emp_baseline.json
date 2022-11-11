@@ -1,11 +1,11 @@
 {
 	"training_output_dir": "training_output",
-	"model_version": "v0/empirical_baseline_subset",
+	"model_version": "empirical_baseline",
 	"data_mod_kwargs": {
 		"data_dir": "../../data/uniref50_small",
-		"train_data_fname": "subset_train_data.csv",
-		"test_data_fname": "subset_test_data.csv",
-		"val_data_fname": "subset_val_data.csv",
+		"train_data_fname": "train_data.csv",
+		"test_data_fname": "test_data.csv",
+		"val_data_fname": "val_data.csv",
 		"batch_size": 256,
 		"num_workers": 4,
 		"taxon_dropout_rate": 0.2,
@@ -34,20 +34,8 @@
 			"verbose": true
 		}
 	},
-	"callbacks": {
-		"LearningRateMonitor": {},
-		"EarlyStopping": {
-			"monitor": "val_loss",
-			"patience": 15
-		},
-		"StochasticWeightAveraging": {
-			"swa_lrs": 1e-3
-		}
-	},
+	"callbacks": {},
 	"trainer_kwargs": {
-		"max_epochs": 1,
-		"accumulate_grad_batches": 10,
-		"gradient_clip_val": 0.5,
-		"precision": 16
+		"max_epochs": 1
 	}
 }
