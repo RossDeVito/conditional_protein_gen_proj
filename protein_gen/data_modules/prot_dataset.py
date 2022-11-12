@@ -66,6 +66,7 @@ AMINO_ACID_SYM_TO_IDX = {
 	"U": 21,	# Selenocysteine
 	"O": 21,	# Pyrrolysine
 }
+AMINO_ACID_IDX_TO_SYM = {v: k for k, v in AMINO_ACID_SYM_TO_IDX.items()}
 
 
 class ProteinDataset(Dataset):
@@ -248,7 +249,7 @@ def AutoRegressiveLMCollationFn(batch):
 	] = AMINO_ACID_SYM_TO_IDX["start/stop"]
 
 	# Create mask for y_seq loss
-	seq_lengths = batched_samples["sequence_lengths"] + 1
+	# seq_lengths = batched_samples["sequence_lengths"] + 1
 	# seq_mask = torch.arange(y_seq.shape[1]).expand(len(seq_lengths), y_seq.shape[1]) < seq_lengths.unsqueeze(1)
 	seq_mask = y_seq.bool()
 

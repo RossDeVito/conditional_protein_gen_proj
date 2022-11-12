@@ -7,6 +7,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import pytorch_lightning as pl
 
+from protein_gen.data_modules import AMINO_ACID_SYM_TO_IDX, AMINO_ACID_IDX_TO_SYM
+
 
 class ARLMConfig:
 	""" Base configuration class for autoregressive language models. 
@@ -207,7 +209,7 @@ class ARLM(pl.LightningModule):
 		]
 		optimizer = torch.optim.AdamW(
 			optim_groups, 
-			**{k:v for k,v in self.config['optimizer_kwargs'].items() if k is not 'weight_decay'}
+			**{k:v for k,v in self.config['optimizer_kwargs'].items() if k != 'weight_decay'}
 		)
 
 		if self.config['reduce_lr_on_plateau_kwargs'] is not None:
@@ -223,6 +225,98 @@ class ARLM(pl.LightningModule):
 			}
 		else:
 			return optimizer
+
+	def predict_step(self, batch):
+		return self(batch)
+
+	@torch.no_grad()
+	def sample(
+		self, 
+		x, 
+		temperature=1.0, 
+		top_k=1,
+		max_len=256,
+		return_string=True,
+	):
+		""" Sample from model to generate protein sequences.
+		
+		Args:
+			x (dict): Input dictionary with keys:
+				"conditioning_tags": Conditioning tags (encoder input) of shape
+					(batch_size, max_num_conditioning_tags).
+				"tag_mask": Mask for conditioning tags of shape
+					(batch_size, max_num_conditioning_tags).
+			temperature (float): Temperature for sampling.
+			top_k (int, default 1): Number of top k tokens to sample from.
+			return_string (bool, default True): Whether to return the sampled
+				sequence as a string in addition to the token ids.
+		"""
+
+		# Get device
+		device = next(self.parameters()).device
+	
+		# Move conditioning tags to device
+		conditioning_tags = x["conditioning_tags"].to(device)
+		tag_mask = x["tag_mask"].to(device)
+
+		# Initialize sequence
+		seq = torch.zeros(
+			conditioning_tags.shape[0], max_len, dtype=torch.long, device=device
+		)
+		seq[:, 0] = AMINO_ACID_SYM_TO_IDX['start/stop']
+
+		# Initialize sequence mask
+		seq_mask = torch.zeros(
+			conditioning_tags.shape[0], max_len, dtype=torch.bool, device=device
+		)
+		seq_mask[:, 0] = True
+
+		# Sample for each position
+		for i in range(1, max_len):
+			# Get logits
+			logits = self(
+				{
+					"x_seq": seq,
+					"conditioning_tags": conditioning_tags,
+					"tag_mask": tag_mask,
+					"seq_mask": seq_mask
+				}
+			)[:, i-1, :]
+			logits = logits / temperature
+
+			# Get top k tokens
+			if top_k > 1:
+				top_k_logits, top_k_indices = torch.topk(logits, top_k)
+				distribution = torch.distributions.categorical.Categorical(logits=top_k_logits)
+				next_token = top_k_indices.gather(1, distribution.sample().unsqueeze(-1))
+			else:
+				next_token = torch.argmax(logits, dim=-1, keepdim=True)
+
+			# Sample from distribution
+			seq[:, i] = next_token.squeeze()
+			seq_mask[:, i] = True
+
+			# Stop if end token is sampled at least once per row
+			if torch.all(torch.any(seq[:, 1:] == AMINO_ACID_SYM_TO_IDX['start/stop'], dim=1)):
+				break
+
+		if return_string:
+			# Convert each row to protein string ending with start/stop token
+			aa_strings = []
+			for row in seq:
+				aa_list = []
+				for i, aa_idx in enumerate(row):
+					if i == 0:
+						continue
+					aa_string = AMINO_ACID_IDX_TO_SYM[aa_idx.item()]
+					if aa_string == 'start/stop':
+						break
+					aa_list.append(aa_string)
+				aa_strings.append(''.join(aa_list))
+
+			return seq, aa_strings
+		else:
+			return seq
 
 
 class UniformBaselineARLM(pl.LightningModule):
