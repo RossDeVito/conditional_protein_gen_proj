@@ -116,8 +116,9 @@ if __name__ == '__main__':
 		save_path = os.path.join(
 			'embeddings', args.embedding_type, args.model_name
 		)
-	if not os.path.exists(os.path.dirname(save_path)):
-		os.makedirs(os.path.dirname(save_path))
+
+	if not os.path.exists(save_path):
+		os.makedirs(save_path)
 
 	np.save(os.path.join(save_path, 'prot_mean_embs.npy'), prot_mean_embs)
 	np.save(os.path.join(save_path, 'prot_masked_mean_embs.npy'), prot_masked_mean_embs)

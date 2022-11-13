@@ -8,7 +8,6 @@ in the same format so a common evaluation script can compare them head to head.
 
 import argparse
 import os
-import json
 import platform
 
 import pandas as pd
@@ -60,6 +59,9 @@ if __name__ == '__main__':
 	if torch.backends.mps.is_available():
 		mps_device = torch.device("mps")
 		model.to(mps_device)
+	elif torch.cuda.is_available():
+		gpu_device = torch.device("cuda")
+		model.to(gpu_device)
 
 	# Set test data path
 	if args.use_subset:
@@ -84,6 +86,9 @@ if __name__ == '__main__':
 	orig_protein_tags = []
 
 	for b_idx, batch in enumerate(tqdm(test_dataloader)):
+		# Move all values in batch to device
+		batch = {k: v.to(model.device) for k, v in batch.items()}
+
 		# Generate proteins
 		gen_tokens, gen_strings = model.sample(batch, **sample_kwargs)
 

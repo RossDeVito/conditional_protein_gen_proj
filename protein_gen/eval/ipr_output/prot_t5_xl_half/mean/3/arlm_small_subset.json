@@ -1,0 +1,1 @@
+{"precision": 0.4064, "recall": 0.0386, "model_name": "arlm_small_subset", "k": 3, "masked_mean": false, "emb_model": "prot_t5_xl_half"}
