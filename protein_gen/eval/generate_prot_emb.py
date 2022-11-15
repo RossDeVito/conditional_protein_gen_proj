@@ -13,9 +13,61 @@ from transformers import T5Tokenizer, T5EncoderModel
 
 
 MODEL_NAME_TO_OUTPUT_PATH = {
+	'arlm_small_top5': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full', 
+		'arlm_small', 'top5', 'generated_proteins.csv'
+	),
+	'arlm_large_top5': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full',
+		'arlm_large', 'top5', 'generated_proteins.csv'
+	),
+	'arlm_large_top10ß': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full',
+		'arlm_large', 'top10', 'generated_proteins.csv'
+	),	
 	'arlm_small_subset': os.path.join(
 		'..', 'autoregressive_LM', 'saved_output', 'subset', 
 		'arlm_small', 'top10', 'generated_proteins.csv'
+	),
+	'rand_10_subset_0': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'subset',
+		'percent_sub_0.1', 'rand_sub_replicate_0.csv'
+	),
+	'rand_10_subset_1': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'subset',
+		'percent_sub_0.1', 'rand_sub_replicate_1.csv'
+	),
+	'rand_10_subset_2': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'subset',
+		'percent_sub_0.1', 'rand_sub_replicate_2.csv'
+	),
+	'rand_10_subset_3': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'subset',
+		'percent_sub_0.1', 'rand_sub_replicate_3.csv'
+	),
+	'rand_10_subset_4': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'subset',
+		'percent_sub_0.1', 'rand_sub_replicate_4.csv'
+	),
+	'rand_50_subset_0': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'subset',
+		'percent_sub_0.5', 'rand_sub_replicate_0.csv'
+	),
+	'rand_50_subset_1': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'subset',
+		'percent_sub_0.5', 'rand_sub_replicate_1.csv'
+	),
+	'rand_50_subset_2': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'subset',
+		'percent_sub_0.5', 'rand_sub_replicate_2.csv'
+	),
+	'rand_50_subset_3': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'subset',
+		'percent_sub_0.5', 'rand_sub_replicate_3.csv'
+	),
+	'rand_50_subset_4': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'subset',
+		'percent_sub_0.5', 'rand_sub_replicate_4.csv'
 	),
 }
 
