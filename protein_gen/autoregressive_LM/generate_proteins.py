@@ -27,6 +27,10 @@ MODEL_PATHS = {
 		'training_output', 'arlm_small', 'version_13',
 		'checkpoints', 'epoch=133-best_val_loss.ckpt'
 	),
+	'arlm_large': os.path.join(
+		'training_output', 'arlm_large', 'version_18',
+		'checkpoints', 'epoch=237-best_val_loss.ckpt'
+	),
 }
 
 SAMPLING_PARAMS = {
