@@ -1,0 +1,1 @@
+{"precision": 0.3858333333333333, "recall": 0.3747, "realism": 4.457435168185685, "model_name": "rand_25_2", "k": 3, "masked_mean": true, "emb_model": "prot_t5_xl_half"}

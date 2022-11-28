@@ -18,6 +18,7 @@ if __name__ == '__main__':
 	parser.add_argument('-mm', '--masked_mean', action='store_true')
 	parser.add_argument('-s', '--save_ground_truth_manifold', action='store_true')
 	parser.add_argument('-k', '--k', type=int, default=3)
+	parser.add_argument('-n', '--num_samples', type=int, default=-1)
 
 	args = parser.parse_args()
 
@@ -26,7 +27,8 @@ if __name__ == '__main__':
 	ipr_manifold_dir = os.path.join(
 		'ipr_manifolds', args.emb_dir, 
 		'masked_mean' if args.masked_mean else 'mean',
-		'subset' if 'subset' in args.model_dir else 'full'
+		'subset' if 'subset' in args.model_dir else 'full',
+		'all' if args.num_samples == -1 else str(args.num_samples)
 	)
 
 	# If --save_ground_truth_manifold is set, save ground truth manifold to
@@ -40,8 +42,15 @@ if __name__ == '__main__':
 			'prot_masked_mean_embs.npy' if args.masked_mean else 'prot_mean_embs.npy'
 		))
 
+		if args.num_samples != -1:
+			gt_embs = gt_embs[:args.num_samples]
+
+		print("Computing ground truth manifold", flush=True)
+
 		# Save ground truth manifold.
 		ipr.compute_manifold_ref(gt_embs)
+
+		print('Saving manifold', flush=True)
 		
 		os.makedirs(ipr_manifold_dir, exist_ok=True)
 		ipr.save_ref(
@@ -57,11 +66,15 @@ if __name__ == '__main__':
 		)
 		prot_embs = np.load(emb_path)
 
+		if args.num_samples != -1:
+			prot_embs = prot_embs[:args.num_samples]
+
 		# compute metric
 		ipr.compute_manifold_ref(
 			os.path.join(ipr_manifold_dir, 'k{}_gt_manifold.npz'.format(args.k))
 		)
 		metric = ipr.precision_and_recall(prot_embs)
+		realism_score = ipr.realism(prot_embs)
 
 		print('k-NN precision-recall metric: {}'.format(metric))
 
@@ -77,6 +90,7 @@ if __name__ == '__main__':
 			json.dump({
 				'precision': metric.precision,
 				'recall': metric.recall,
+				'realism': realism_score,
 				'model_name': args.model_dir,
 				'k': args.k,
 				'masked_mean': args.masked_mean,

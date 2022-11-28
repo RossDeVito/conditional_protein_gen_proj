@@ -1,0 +1,1 @@
+{"precision": 0.12816666666666668, "recall": 0.0104, "realism": 0.9884346733321355, "model_name": "arlm_large_top10_uncond", "k": 3, "masked_mean": false, "emb_model": "prot_t5_xl_half"}

@@ -6,6 +6,7 @@ import platform
 
 import numpy as np
 import pandas as pd
+import tqdm
 from tqdm import trange
 
 import torch
@@ -17,14 +18,58 @@ MODEL_NAME_TO_OUTPUT_PATH = {
 		'..', 'autoregressive_LM', 'saved_output', 'full', 
 		'arlm_small', 'top5', 'generated_proteins.csv'
 	),
+	'arlm_small_top10': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full', 
+		'arlm_small', 'top10', 'generated_proteins.csv'
+	),
+	'arlm_small_top10_t1_5': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full', 
+		'arlm_small', 'top10_t1_5', 'generated_proteins.csv'
+	),
 	'arlm_large_top5': os.path.join(
 		'..', 'autoregressive_LM', 'saved_output', 'full',
 		'arlm_large', 'top5', 'generated_proteins.csv'
 	),
-	'arlm_large_top10ß': os.path.join(
+	'arlm_large_top5_t1_5': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full',
+		'arlm_large', 'top5_t1_5', 'generated_proteins.csv'
+	),
+	'arlm_large_top10': os.path.join(
 		'..', 'autoregressive_LM', 'saved_output', 'full',
 		'arlm_large', 'top10', 'generated_proteins.csv'
-	),	
+	),
+	'arlm_large_top10_tdo': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full',
+		'arlm_large', 'top10_tdo', 'generated_proteins.csv'
+	),
+	'arlm_large_top10_v0': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full',
+		'arlm_large', 'top10_v0', 'generated_proteins.csv'
+	),
+	'arlm_large_top10_uncond': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full',
+		'arlm_large', 'top10_uncond', 'generated_proteins.csv'
+	),
+	'arlm_large_top10_t0_9': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full',
+		'arlm_large', 'top10_t0_9', 'generated_proteins.csv'
+	),
+	'arlm_large_top10_t1_1': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full',
+		'arlm_large', 'top10_t1_1', 'generated_proteins.csv'
+	),
+	'arlm_large_top15': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full',
+		'arlm_large', 'top15', 'generated_proteins.csv'
+	),
+	'arlm_large_top15_t1_2': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full',
+		'arlm_large', 'top15_t1_2', 'generated_proteins.csv'
+	),
+	'arlm_large_top15_t1_5': os.path.join(
+		'..', 'autoregressive_LM', 'saved_output', 'full',
+		'arlm_large', 'top15_t1_5', 'generated_proteins.csv'
+	),
 	'arlm_small_subset': os.path.join(
 		'..', 'autoregressive_LM', 'saved_output', 'subset', 
 		'arlm_small', 'top10', 'generated_proteins.csv'
@@ -69,6 +114,79 @@ MODEL_NAME_TO_OUTPUT_PATH = {
 		'..', 'random_sub', 'saved_random_subs', 'subset',
 		'percent_sub_0.5', 'rand_sub_replicate_4.csv'
 	),
+	# Full random replaces
+	'rand_10_0': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.1', 'rand_sub_replicate_0.csv'
+	),
+	'rand_10_1': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.1', 'rand_sub_replicate_1.csv'
+	),
+	'rand_10_2': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.1', 'rand_sub_replicate_2.csv'
+	),
+	'rand_10_3': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.1', 'rand_sub_replicate_3.csv'
+	),
+	'rand_10_4': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.1', 'rand_sub_replicate_4.csv'
+	),
+	'rand_10_5': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.1', 'rand_sub_replicate_5.csv'
+	),
+	'rand_25_0': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.25', 'rand_sub_replicate_0.csv'
+	),
+	'rand_25_1': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.25', 'rand_sub_replicate_1.csv'
+	),
+	'rand_25_2': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.25', 'rand_sub_replicate_2.csv'
+	),
+	'rand_25_3': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.25', 'rand_sub_replicate_3.csv'
+	),
+	'rand_25_4': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.25', 'rand_sub_replicate_4.csv'
+	),
+	'rand_25_5': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.25', 'rand_sub_replicate_5.csv'
+	),
+	'rand_50_0': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.5', 'rand_sub_replicate_0.csv'
+	),
+	'rand_50_1': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.5', 'rand_sub_replicate_1.csv'
+	),
+	'rand_50_2': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.5', 'rand_sub_replicate_2.csv'
+	),
+	'rand_50_3': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.5', 'rand_sub_replicate_3.csv'
+	),
+	'rand_50_4': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.5', 'rand_sub_replicate_4.csv'
+	),
+	'rand_50_5': os.path.join(
+		'..', 'random_sub', 'saved_random_subs', 'full',
+		'percent_sub_0.5', 'rand_sub_replicate_4.csv'
+	),
 }
 
 EMB_TYPE_TO_MODEL_PARAMS = {
@@ -95,8 +213,10 @@ if __name__ == '__main__':
 	parser.add_argument('-e', '--embedding_type', type=str, required=True)
 	parser.add_argument('-b', '--batch_size', type=int, default=32)
 	parser.add_argument('-t', '--do_ground_true', action='store_true')
+	parser.add_argument('-n', '--num_samples', type=int, default=-1)
 
 	args = parser.parse_args()
+	print(args)
 
 	# Load generated proteins
 	generated_proteins = pd.read_csv(MODEL_NAME_TO_OUTPUT_PATH[args.model_name])
@@ -137,7 +257,11 @@ if __name__ == '__main__':
 	prot_mean_embs = []
 	prot_masked_mean_embs = []
 
-	for i in trange(0, len(protein_seqs), args.batch_size):
+	tqdm_batches = trange(0, len(protein_seqs), args.batch_size)
+
+	for i in tqdm_batches:
+		tqdm_batches.write(str(i))
+		tqdm_batches.refresh()
 		seqs = protein_seqs[i:i+args.batch_size]
 		tokens = tokenizer.batch_encode_plus(
 			seqs, add_special_tokens=True, padding="longest"
@@ -158,6 +282,9 @@ if __name__ == '__main__':
 		prot_masked_mean_embs.extend(
 			(masked_emb.sum(1) / attention_mask.sum(1).unsqueeze(-1)).tolist()
 		)
+
+		if args.num_samples > 0 and len(prot_masked_mean_embs) > args.num_samples:
+			break
 
 	# Save embeddings with numpy
 	if args.do_ground_true:

@@ -37,8 +37,32 @@ SAMPLING_PARAMS = {
 	'top5': {
 		'top_k': 5,'temperature': 1.0
 	},
+	'top5_t1_5': {
+		'top_k': 5,'temperature': 1.5
+	},
 	'top10': {
 		'top_k': 10,'temperature': 1.0
+	},
+	'top10_tdo': {
+		'top_k': 10,'temperature': 1.0, 'tdo': 0.2
+	},
+	'top10_t0_9': {
+		'top_k': 10,'temperature': 0.9
+	},
+	'top10_t1_1': {
+		'top_k': 10,'temperature': 1.1
+	},
+	'top10_t1_5': {
+		'top_k': 10,'temperature': 1.5
+	},
+	'top15': {
+		'top_k': 15,'temperature': 1.0
+	},
+	'top15_t1_2': {
+		'top_k': 15,'temperature': 1.2
+	},
+	'top15_t1_5': {
+		'top_k': 15,'temperature': 1.5
 	},
 }
 
@@ -52,8 +76,14 @@ if __name__ == '__main__':
 	parser.add_argument('-p', '--sampling_params', type=str, required=True)
 	parser.add_argument('-s', '--use_subset', action='store_true')
 	parser.add_argument('-b', '--batch_size', type=int, default=32)
+	parser.add_argument('-u', '--uncondioned', action='store_true')
+	parser.add_argument('-m', '--min_num_samples', type=int, default=-1)
 
 	args = parser.parse_args()
+
+	print(args)
+
+	sample_kwargs = SAMPLING_PARAMS[args.sampling_params]
 
 	# Load Pytorch Lightning checkpoint
 	model = ARLM.load_from_checkpoint(MODEL_PATHS[args.model_name])
@@ -74,6 +104,17 @@ if __name__ == '__main__':
 	# Set batch size
 	training_args['data_mod_kwargs']['batch_size'] = args.batch_size
 
+	if args.uncondioned:
+		training_args['data_mod_kwargs']['taxon_dropout_rate'] = 1.0
+		training_args['data_mod_kwargs']['attribute_dropout_rate'] = 1.0
+	elif 'tdo' in sample_kwargs.keys():
+		tdo = sample_kwargs.pop('tdo')
+		training_args['data_mod_kwargs']['taxon_dropout_rate'] = tdo
+		training_args['data_mod_kwargs']['attribute_dropout_rate'] = tdo
+	else:
+		training_args['data_mod_kwargs']['taxon_dropout_rate'] = 0.0
+		training_args['data_mod_kwargs']['attribute_dropout_rate'] = 0.0
+
 	# Create data module
 	data_module = ProteinDataModule(
 		collate_fn=AutoRegressiveLMCollationFn,
@@ -83,13 +124,15 @@ if __name__ == '__main__':
 	test_dataloader = data_module.test_dataloader()
 
 	# Generate proteins for each sample in the test set
-	sample_kwargs = SAMPLING_PARAMS[args.sampling_params]
-
 	gen_protein_strings = []
 	orig_protein_strings = []
 	orig_protein_tags = []
 
-	for b_idx, batch in enumerate(tqdm(test_dataloader)):
+	tqdm_batches = tqdm(test_dataloader)
+
+	for b_idx, batch in enumerate(tqdm_batches):
+		tqdm_batches.refresh()
+		tqdm_batches.write(str(b_idx))
 		# Move all values in batch to device
 		batch = {k: v.to(model.device) for k, v in batch.items()}
 
@@ -114,8 +157,10 @@ if __name__ == '__main__':
 
 		orig_protein_tags.extend(batch['conditioning_tags'].detach().tolist())
 		
-		# if b_idx > 5:
-		# 	break
+		if args.min_num_samples > 0 and len(orig_protein_strings) > args.min_num_samples:
+			break
+
+	tqdm_batches.refresh()
 
 	# Save generated proteins
 	# Save dir concats model name, sampling params, and if subset is used
@@ -123,7 +168,7 @@ if __name__ == '__main__':
 		'saved_output',
 		'subset' if args.use_subset else 'full',
 		args.model_name,
-		args.sampling_params,
+		args.sampling_params + ('_uncond' if args.uncondioned else ''),
 	)
 
 	if not os.path.exists(save_dir):
