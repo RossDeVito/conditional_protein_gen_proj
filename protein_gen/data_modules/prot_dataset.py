@@ -39,6 +39,7 @@ Will map all unusual translations and ambiguous residues to X
 
 AMINO_ACID_SYM_TO_IDX = {
 	"pad": 0,	# Padding
+	"mask": 23,	# Masking for DDPM
 	"start/stop": 22,
 	"A": 1,		# 20 standard amino acid residues
 	"C": 2,
@@ -265,6 +266,35 @@ def AutoRegressiveLMCollationFn(batch):
 	}
 
 
+def D3PMCollationFn(batch):
+	batched_samples = SeperateInputColationFn(batch)
+
+	# Add stop token to sequence
+	sequence = torch.cat(
+		[
+			batched_samples["sequence"],
+			torch.zeros(
+				(batched_samples["sequence"].shape[0], 1)
+			)
+		],
+		dim=1
+	).long()
+	sequence[
+		torch.arange(batched_samples['sequence_lengths'].shape[0]),
+		batched_samples['sequence_lengths']
+	] = AMINO_ACID_SYM_TO_IDX["start/stop"]
+
+	# Create mask for conditioning tags
+	tag_mask = batched_samples["conditioning_tags"].bool()
+
+	return {
+		"sequence": sequence,
+		"sequence_lengths": batched_samples["sequence_lengths"],
+		"conditioning_tags": batched_samples["conditioning_tags"],
+		"tag_mask": tag_mask,
+	}
+
+
 class ProteinDataModule(pl.LightningDataModule):
 	"""
 	Data module that handles train/val/test datasets during training
@@ -380,6 +410,8 @@ if __name__ == '__main__':
 	collated_batch_sep = SeperateInputColationFn(batch)
 
 	collated_batch = AutoRegressiveLMCollationFn(batch)
+
+	d3pm_batch = D3PMCollationFn(batch)
 
 	# Test data mod
 	data_module = ProteinDataModule(

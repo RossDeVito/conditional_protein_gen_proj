@@ -66,7 +66,6 @@ class ARLMConfig:
 
 		self.reduce_lr_on_plateau_kwargs = reduce_lr_on_plateau_kwargs
 		
-
 	def as_dict(self):
 		return vars(self)
 

@@ -13,6 +13,8 @@ protein_gen/autoregressive_LM/training_output/*
 !protein_gen/autoregressive_LM/training_output/empirical_baseline/
 protein_gen/autoregressive_LM/saved_output/*
 
+protein_gen/d3pm/training_output/*
+
 protein_gen/eval/**/*.npy
 protein_gen/eval/**/*.npz
 protein_gen/eval/ipr_manifolds/*
