@@ -1,0 +1,1 @@
+{"precision": 0.00023333333333333333, "recall": 0.0, "realism": 0.692157860924399, "model_name": "d3pm_large_s20_top10", "k": 3, "masked_mean": true, "emb_model": "prot_t5_xl_half"}

@@ -187,6 +187,33 @@ MODEL_NAME_TO_OUTPUT_PATH = {
 		'..', 'random_sub', 'saved_random_subs', 'full',
 		'percent_sub_0.5', 'rand_sub_replicate_4.csv'
 	),
+
+	# D3PM
+	'd3pm_small_s20_top1': os.path.join(
+		'..', 'd3pm', 'saved_output', 'full',
+		'd3pm_small', 's20_top1', 'generated_proteins.csv'
+	),
+	'd3pm_large_s20_top1': os.path.join(
+		'..', 'd3pm', 'saved_output', 'full',
+		'd3pm_large', 's20_top1', 'generated_proteins.csv'
+	),
+	'd3pm_large_s100_top1': os.path.join(
+		'..', 'd3pm', 'saved_output', 'full',
+		'd3pm_large', 's100_top1', 'generated_proteins.csv'
+	),
+	'd3pm_large_s20_top5': os.path.join(
+		'..', 'd3pm', 'saved_output', 'full',
+		'd3pm_large', 's20_top5', 'generated_proteins.csv'
+	),
+	'd3pm_large_s100_top5': os.path.join(
+		'..', 'd3pm', 'saved_output', 'full',
+		'd3pm_large', 's100_top5', 'generated_proteins.csv'
+	),
+	'd3pm_large_s20_top10': os.path.join(
+		'..', 'd3pm', 'saved_output', 'full',
+		'd3pm_large', 's20_top10', 'generated_proteins.csv'
+	),
+
 }
 
 EMB_TYPE_TO_MODEL_PARAMS = {

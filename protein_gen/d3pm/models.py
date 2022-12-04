@@ -274,11 +274,12 @@ class D3PM(pl.LightningModule):
 	def sample(
 		self,
 		x,
+		max_length,
 		temperature=1.0, 
 		top_k=1,
 		return_strings=True,
 		n_diffusion_steps=20,
-		use_mask_p_floor=False
+		use_mask_p_floor=False,
 	):
 		""" Sample from model via diffusion with n_diffusion_steps steps.
 
@@ -311,7 +312,7 @@ class D3PM(pl.LightningModule):
 
 		# Create all masked sequence
 		seqs = torch.full(
-			(conditioning_tags.shape[0], self.config['max_sequence_length']),
+			(conditioning_tags.shape[0], max_length),
 			fill_value=self.config['aa_vocab_size'],
 			dtype=torch.long,
 			device=device
@@ -326,8 +327,8 @@ class D3PM(pl.LightningModule):
 		# Loop over diffusion steps
 		batch = {
 			"sequence": seqs,
-			"conditioning_tags": x['conditioning_tags'],
-			"tag_mask": x['tag_mask'],
+			"conditioning_tags": conditioning_tags,
+			"tag_mask": tag_mask,
 		}
 
 		for i in range(n_diffusion_steps):
