@@ -1,1 +1,1 @@
-Deep diffusion models for conditional protein string generation.
+Generative models for conditional protein string generation. Project and report for UCSD Deep generative models class. Final report is [here](https://github.com/RossDeVito/conditional_protein_gen_proj/blob/main/CSE291B_Project_final%20(2).pdf).
