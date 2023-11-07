@@ -31,6 +31,10 @@ MODEL_PATHS = {
 		'training_output', 'large', 'version_2',
 		'checkpoints', 'epoch=48-best_val_loss.ckpt'
 	),
+	'd3pm_large_b': os.path.join(
+		'training_output', 'large', 'version_3',
+		'checkpoints', 'epoch=30-best_val_loss_cp.ckpt'
+	),
 }
 
 SAMPLING_PARAMS = {

@@ -214,6 +214,16 @@ MODEL_NAME_TO_OUTPUT_PATH = {
 		'd3pm_large', 's20_top10', 'generated_proteins.csv'
 	),
 
+	# version b
+	'd3pm_large_b_s100_top1': os.path.join(
+		'..', 'd3pm', 'saved_output', 'full',
+		'd3pm_large_b', 's100_top1', 'generated_proteins.csv'
+	),
+	'd3pm_large_b_s100_top5': os.path.join(
+		'..', 'd3pm', 'saved_output', 'full',
+		'd3pm_large_b', 's100_top5', 'generated_proteins.csv'
+	),
+
 }
 
 EMB_TYPE_TO_MODEL_PARAMS = {
